@@ -6,6 +6,7 @@ import jakarta.inject.Inject
 import spock.lang.Shared
 import spock.lang.Specification
 
+import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
 import java.security.MessageDigest
@@ -57,6 +58,5 @@ class FileSpec extends Specification {
         entry << GroovyCollections.combinations([localFiles, AlgorithmEnum.values()])
         localFile = (entry as List)[0]
         algorithm = (entry as List)[1]
-
     }
 }

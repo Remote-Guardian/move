@@ -47,7 +47,7 @@ public final class Utils {
             try {
                 hash = HexFormat.of().formatHex(digest.digest(Files.readAllBytes((path))));
             } catch (IOException e) {
-                throw new RemoteGuardianException(String.format("failed to read from file %s", path.getFileName()), e);
+                throw new RemoteGuardianException(String.format("failed to read from file \"%s\"", path.getFileName()), e);
             }
             return new File(path, hash);
         }).toArray(File[]::new);
