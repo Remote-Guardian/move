@@ -43,6 +43,16 @@ class FileSpec extends Specification {
         and:"Validate the hash using the new File object"
         thisFile.validateHash(algorithm as AlgorithmEnum)
 
+        then: "Create a file with a hash not formatted in hex"
+        File thisBadFile = new File(filepath, new String(digest.digest(expectedArray), StandardCharsets.UTF_8))
+
+        and: "Attempting to validate the hash of this bad file will throw an exception"
+        try {
+            thisBadFile.validateHash(algorithm as AlgorithmEnum)
+        } catch (RemoteGuardianException e) {
+            assert e.getMessage() == "Hash does not match"
+        }
+
         where:"all combinations of localFile and algorithm are tested"
         entry << GroovyCollections.combinations([localFiles, AlgorithmEnum.values()])
         localFile = (entry as List)[0]
