@@ -11,6 +11,7 @@ class MoveCommandSpec extends Specification {
 
     @Shared @AutoCleanup ApplicationContext ctx = ApplicationContext.run(Environment.CLI, Environment.TEST)
 
+
     void "test move with command line option"() {
         given:
         ByteArrayOutputStream baos = new ByteArrayOutputStream()
