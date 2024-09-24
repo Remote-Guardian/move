@@ -1,4 +1,4 @@
-package com.remote_guardian
+package com.remoteguardian
 
 import io.micronaut.core.io.ResourceLoader
 import io.micronaut.test.extensions.spock.annotation.MicronautTest

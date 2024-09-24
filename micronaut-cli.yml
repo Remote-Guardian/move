@@ -1,5 +1,5 @@
 applicationType: cli
-defaultPackage: com.remote_guardian
+defaultPackage: com.remoteguardian
 testFramework: spock
 sourceLanguage: java
 buildTool: gradle

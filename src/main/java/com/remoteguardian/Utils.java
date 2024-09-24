@@ -1,4 +1,4 @@
-package com.remote_guardian;
+package com.remoteguardian;
 
 import java.io.IOException;
 import java.nio.file.Files;

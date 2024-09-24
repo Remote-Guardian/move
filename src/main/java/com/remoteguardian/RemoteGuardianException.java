@@ -1,4 +1,4 @@
-package com.remote_guardian;
+package com.remoteguardian;
 
 /**
  * A generic exception class for Remote Guardian.

@@ -6,7 +6,7 @@ plugins {
 }
 
 version = "0.0.1"
-group = "com.remote_guardian"
+group = "com.remoteguardian"
 
 repositories {
     mavenCentral()
@@ -29,7 +29,7 @@ dependencies {
 
 
 application {
-    mainClass = "com.remote_guardian.MoveCommand"
+    mainClass = "com.remoteguardian.File"
 }
 java {
     sourceCompatibility = JavaVersion.toVersion("17")
@@ -42,7 +42,7 @@ micronaut {
     testRuntime("spock2")
     processing {
         incremental(true)
-        annotations("com.remote_guardian.*")
+        annotations("com.remoteguardian.*")
     }
 }
 

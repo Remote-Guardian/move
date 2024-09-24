@@ -1,5 +1,4 @@
-package com.remote_guardian;
-
+package com.remoteguardian;
 /**
  * Valid values for the {@code --algorithm} command line option.
  * <p>
