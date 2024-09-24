@@ -77,9 +77,15 @@ class UtilsSpec extends Specification {
         }
         file.close()
 
-        then:
+        then:"validate the error message reports the invalid file"
         error.getMessage() == "failed to read from file \"$localFile\""
         error.cause.class == IOException
+
+        and:"clean up errant files"
+        try{
+            (localFile as java.io.File).delete()
+        }catch (Exception ignored){}
+
 
         where:
         entry << GroovyCollections.combinations([localFiles, AlgorithmEnum.values()])
