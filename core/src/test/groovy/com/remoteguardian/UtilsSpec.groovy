@@ -64,7 +64,6 @@ class UtilsSpec extends Specification {
         algorithm = (entry as List)[1]
     }
 
-    //TODO: add test for linux file permissions
     void "test hash method called on an invalid file throws IOException wrapped by a RemoteGuardianException"() {
         when:
         final RandomAccessFile file = new RandomAccessFile(localFile as java.io.File, "rw")
