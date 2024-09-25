@@ -1,8 +1,9 @@
 plugins {
     id("groovy") 
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+// I think this needs to not be here since this is a library    id("com.github.johnrengelman.shadow") version "8.1.1"
     id("io.micronaut.application") version "4.4.2"
     id("io.micronaut.test-resources") version "4.4.2"
+    id "org.sonarqube" version "4.4.1.3373"
 }
 
 version = "0.0.1"
@@ -36,8 +37,6 @@ java {
     targetCompatibility = JavaVersion.toVersion("17")
 }
 
-
-
 micronaut {
     testRuntime("spock2")
     processing {
@@ -46,5 +45,10 @@ micronaut {
     }
 }
 
-
-
+sonar {
+    properties {
+        property "sonar.projectKey", "Remote-Guardian_move"
+        property "sonar.organization", "remoteguardian"
+        property "sonar.host.url", "https://sonarcloud.io"
+    }
+}
