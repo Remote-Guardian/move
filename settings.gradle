@@ -1,3 +1,4 @@
 rootProject.name="move"
 include 'core'
+include 'cli'
 
