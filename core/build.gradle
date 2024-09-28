@@ -1,10 +1,9 @@
 plugins {
     id("groovy") 
 // I think this needs to not be here since this is a library    id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("io.micronaut.application") version "4.4.2"
+    id("io.micronaut.library") version "4.4.2"
     id("org.sonarqube") version "4.4.1.3373"
     id("jacoco")
-    id 'org.graalvm.buildtools.native' version '0.10.1'
 }
 
 version = "0.0.1"
@@ -16,11 +15,6 @@ repositories {
 
 dependencies {
     annotationProcessor("org.projectlombok:lombok")
-    annotationProcessor("info.picocli:picocli-codegen")
-    annotationProcessor("io.micronaut.security:micronaut-security-annotations")
-    annotationProcessor("io.micronaut.serde:micronaut-serde-processor")
-    implementation("io.micronaut.security:micronaut-security")
-    implementation("io.micronaut.serde:micronaut-serde-jackson")
     implementation("org.apache.logging.log4j:log4j-api")
     implementation platform("org.apache.logging.log4j:log4j-bom:2.23.1")
     compileOnly("org.projectlombok:lombok")
@@ -29,10 +23,6 @@ dependencies {
     runtimeOnly("org.yaml:snakeyaml")
 }
 
-
-application {
-    mainClass = "com.remoteguardian.File"
-}
 java {
     sourceCompatibility = JavaVersion.toVersion("17")
     targetCompatibility = JavaVersion.toVersion("17")

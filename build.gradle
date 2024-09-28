@@ -1,0 +1,17 @@
+// Top-level build.gradle file
+plugins {
+    id 'org.sonarqube' version '4.4.1.3373'
+    id 'jacoco'
+}
+
+allprojects {
+    repositories {
+        mavenCentral()
+    }
+}
+
+subprojects {
+    apply plugin: 'groovy'
+    sourceCompatibility = JavaVersion.toVersion("17")
+    targetCompatibility = JavaVersion.toVersion("17")
+}
