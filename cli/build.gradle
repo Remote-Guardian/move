@@ -14,10 +14,18 @@ repositories {
 dependencies {
     annotationProcessor("info.picocli:picocli-codegen")
     annotationProcessor("io.micronaut.serde:micronaut-serde-processor")
+    implementation project(":core")
+    // cve 2017-20189 not applicable to this module as no serialization is performed. any serialization outside of move
+    // is done with mn-data, which doesn't use native java for serialization.
+    implementation("nio:nio:1.0.4")
     implementation("info.picocli:picocli")
     implementation("io.micronaut.picocli:micronaut-picocli")
     implementation("io.micronaut.serde:micronaut-serde-jackson")
-    runtimeOnly("ch.qos.logback:logback-classic")
+    implementation("org.apache.logging.log4j:log4j-api")
+    implementation 'io.reactivex.rxjava3:rxjava:3.1.9'
+    implementation platform("org.apache.logging.log4j:log4j-bom:2.23.1")
+    runtimeOnly("org.apache.logging.log4j:log4j-core")
+    runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl")
     runtimeOnly("org.yaml:snakeyaml")
 }
 

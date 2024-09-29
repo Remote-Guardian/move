@@ -1,0 +1,11 @@
+status: warn
+appenders:
+  console:
+    type: Console
+    layout:
+      type: PatternLayout
+      pattern: %d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n
+root:
+  level: info
+  appender-ref:
+    - console
