@@ -7,6 +7,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.HexFormat;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Utility functions that are not part of any particular class.
@@ -27,7 +29,7 @@ public final class Utils {
      *
      * @param algorithm the algorithm to use for computing the hash
      * @param filePath the files to compute the hash of
-     * @return an array of files with their hash set
+     * @return a set of files with their hash set
      * @throws NoSuchAlgorithmException if the algorithm is not supported
      *
      * @see AlgorithmEnum#values()
@@ -40,7 +42,7 @@ public final class Utils {
      * }
      * </pre>
      */
-    public static File[] hash(AlgorithmEnum algorithm, Path... filePath) throws NoSuchAlgorithmException {
+    public static Set<File> hash(AlgorithmEnum algorithm, Path... filePath) throws NoSuchAlgorithmException {
         MessageDigest digest = MessageDigest.getInstance(algorithm.toString());
         return Arrays.stream(filePath).map(path -> {
             String hash;
@@ -50,6 +52,6 @@ public final class Utils {
                 throw new RemoteGuardianException(String.format("failed to read from file \"%s\"", path.getFileName()), e);
             }
             return new File(path, hash);
-        }).toArray(File[]::new);
+        }).collect(Collectors.toSet());
     }
 }

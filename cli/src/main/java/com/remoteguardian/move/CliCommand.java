@@ -1,6 +1,9 @@
 package com.remoteguardian.move;
 
+import com.remoteguardian.AlgorithmEnum;
+import com.remoteguardian.File;
 import com.remoteguardian.RemoteGuardianException;
+import com.remoteguardian.Utils;
 import io.micronaut.configuration.picocli.PicocliRunner;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.disposables.Disposable;
@@ -9,12 +12,15 @@ import org.slf4j.LoggerFactory;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.stream.Stream;
 
 @Command(name = "move", description = "recursively moves files and directories",
         mixinStandardHelpOptions = true)
@@ -43,8 +49,42 @@ public class CliCommand implements Runnable {
         if (!Files.isDirectory(Paths.get(outputDirectory))) {
             console.error("Output directory is not a directory: {}", outputDirectory);
         }
-        List<Set<Path>> filePaths = validateFilePaths(input);
+        List<Set<Path>> filePathsList = validateFilePaths(input);
+        Set<Path> filePaths = filePathsList.get(0);
+        filePaths.addAll(getFilesFromDirectories(filePathsList.get(1)));
+        Set<File> files = hashFiles(filePaths);
+        //move files
+    }
 
+    Set<File> hashFiles(Set<Path> files) {
+        Set<File> hashedFiles = Set.of();
+        try {
+            return Utils.hash(AlgorithmEnum.MD5, files.toArray(Path[]::new));
+        } catch (NoSuchAlgorithmException e) {
+            console.error("Could not hash the input files with the MD5 algorithm: {}", e.getMessage());
+            System.exit(1);
+        }
+        return hashedFiles;
+    }
+
+    /**
+     * Recursively gather all files in the given directories and subdirectories.
+     *
+     * @param directories the directories to whose contents are returned
+     * @return a set of all files in the given directories and subdirectories
+     */
+    Set<Path> getFilesFromDirectories(Set<Path> directories) {
+        Set<Path> filePaths = new CopyOnWriteArraySet<>();
+        for (Path directory : directories) {
+            try (Stream<Path> stream = Files.walk(directory)) {
+                stream.filter(Files::isRegularFile)
+                        .forEach(filePaths::add);
+            } catch (IOException e) {
+                console.error("Error traversing reading directory contents: {}", e.getMessage());
+                System.exit(1);
+            }
+        }
+        return filePaths;
     }
 
     /**
