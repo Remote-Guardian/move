@@ -56,11 +56,18 @@ public class CliCommand implements Runnable {
         List<Set<Path>> filePathsList = validateFilePaths(input);
         Set<Path> filePaths = filePathsList.get(0);
         filePaths.addAll(getFilesFromDirectories(filePathsList.get(1)));
-        Set<File> files = hashFiles(filePaths);
+        moveFiles(hashFiles(filePaths), Path.of(outputDirectory));
+    }
+
+    /**
+     * Moves given files to the given output directory. Also validates the hash of the file immediately after moving it.
+     * @param files the set of files to move and hash
+     */
+    void moveFiles(Set<File> files, Path outputDirectory) {
         files.forEach(file -> {
             try {
                 console.debug("Moving {} to {}", file.filePath(), outputDirectory);
-                Files.move(file.filePath(), Paths.get(outputDirectory));
+                Files.move(file.filePath(), outputDirectory);
                 console.debug("Moved {} to {}", file.filePath(), outputDirectory);
             } catch (IOException e) {
                 console.error("Error moving file {} to {} directory", file.filePath(), outputDirectory, e);
@@ -80,8 +87,6 @@ public class CliCommand implements Runnable {
 
         });
         console.debug("Finished moving {} files to {} directory", files.size(), outputDirectory);
-
-
     }
 
     /**
