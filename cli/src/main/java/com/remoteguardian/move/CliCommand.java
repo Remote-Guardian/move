@@ -43,19 +43,43 @@ public class CliCommand implements Runnable {
     }
 
     public void run() {
-        if (!Files.exists(Paths.get(outputDirectory))) {
-            console.error("Output directory does not exist: {}", outputDirectory);
+        Path output = Paths.get(outputDirectory);
+        if (!Files.isDirectory(output, LinkOption.NOFOLLOW_LINKS)) {
+            if (!Files.exists(output)) {
+                console.error("Output directory does not exist: {}", outputDirectory);
+            } else if (Files.isSymbolicLink(output)) {
+                console.error("Output directory is a symbolic link: {}", outputDirectory);
+            }
+            System.exit(1);
         }
-        if (!Files.isDirectory(Paths.get(outputDirectory))) {
-            console.error("Output directory is not a directory: {}", outputDirectory);
-        }
+
         List<Set<Path>> filePathsList = validateFilePaths(input);
         Set<Path> filePaths = filePathsList.get(0);
         filePaths.addAll(getFilesFromDirectories(filePathsList.get(1)));
         Set<File> files = hashFiles(filePaths);
-        //move files
+        files.stream()
+                .map(File::filePath)
+                .forEach(file -> {
+                    try {
+                        console.debug("Moving {} to {}", file, outputDirectory);
+                        Files.move(file, Paths.get(outputDirectory));
+                        console.debug("Moved {} to {}", file, outputDirectory);
+                    } catch (IOException e) {
+                        console.error("Error moving file {} to {} directory", file, outputDirectory, e);
+                        System.exit(1);
+                    }
+                });
+
     }
 
+    /**
+     * Returns a set of file from given set of filePaths using the MD5 algorithm.
+     *
+     * <p>Will exit with System.exit(1) if it fails to hash the files with a NoSuchAlgorithmException.</p>
+     *
+     * @param files the set of files to hash
+     * @return a set of File objects with their hash set
+     */
     Set<File> hashFiles(Set<Path> files) {
         Set<File> hashedFiles = Set.of();
         try {
@@ -94,7 +118,8 @@ public class CliCommand implements Runnable {
      * <p>Any symbolic links are ignored. Each symbolic link is logged at the warn level.</p>
      *
      * @param inputs the paths to be checked
-     * @return a list with two elements. The first element is an array of valid files and the second element is an array of valid directories.
+     * @return a list with two elements. The first element is an array of valid files and the second element is an
+     * array of valid directories.
      * @throws RemoteGuardianException if any given paths are invalid
      */
     private List<Set<Path>> validateFilePaths(String... inputs) {
@@ -104,10 +129,10 @@ public class CliCommand implements Runnable {
         // fail fast
         if (invalidPaths.count().blockingGet() > 0) {
             String invalidPathsStr = Arrays.toString(invalidPaths.blockingStream().toArray(String[]::new));
-            console.error("Error: Input parameter must be a valid file path. Input value: {}", invalidPathsStr);
-            console.error("Please check the input path and make sure it exists. If it is a directory, " +
-                    "it should be accessible and not empty.");
-            throw new RemoteGuardianException("Input parameter must be a valid file path");
+            console.error("Input parameter must be a valid file path. Input value: {} Please check the input " +
+                    "path and make sure it exists. If it is a directory, " +
+                    "it should be accessible and not empty.", invalidPathsStr);
+            System.exit(1);
         }
 
         // provide warning on any found symbolic links
