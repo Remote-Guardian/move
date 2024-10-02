@@ -75,7 +75,7 @@ public class CliCommand implements Runnable {
      */
     Set<Path> getFilesFromDirectories(Set<Path> directories) {
         Set<Path> filePaths = new CopyOnWriteArraySet<>();
-        for (Path directory : directories) {
+        directories.forEach(directory -> {
             try (Stream<Path> stream = Files.walk(directory)) {
                 stream.filter(Files::isRegularFile)
                         .forEach(filePaths::add);
@@ -83,7 +83,7 @@ public class CliCommand implements Runnable {
                 console.error("Error traversing reading directory contents: {}", e.getMessage());
                 System.exit(1);
             }
-        }
+        });
         return filePaths;
     }
 
