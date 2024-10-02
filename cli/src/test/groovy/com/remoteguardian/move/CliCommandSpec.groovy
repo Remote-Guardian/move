@@ -1,5 +1,6 @@
 package com.remoteguardian.move
 
+import com.remoteguardian.File
 import io.micronaut.configuration.picocli.PicocliRunner
 import io.micronaut.context.ApplicationContext
 import io.micronaut.context.env.Environment
@@ -7,6 +8,7 @@ import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import spock.lang.Shared
 import spock.lang.Specification
 
+import java.nio.file.Files
 import java.nio.file.Path
 
 @MicronautTest
@@ -51,6 +53,24 @@ class CliCommandSpec extends Specification {
 
         and:
         hashedFiles.stream().map {it -> it.fileName}.allMatch {localFiles.contains(it.toString())}
+    }
+
+    void "test the moveFiles method"() {
+        given:
+        CliCommand command = new CliCommand();
+        Set<File> fileSet = command.hashFiles(Set.of(Path.of("src/test/resources/" + file as String)));
+        def outputDirectory = Path.of("src/test/resources/new-directory/")
+        Files.createDirectory(outputDirectory)
+
+
+        when:
+        command.moveFiles(fileSet, outputDirectory)
+
+        then:
+        noExceptionThrown()
+
+        where:
+        file << localFiles
     }
 
     /**
