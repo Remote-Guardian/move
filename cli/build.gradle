@@ -17,7 +17,6 @@ dependencies {
     implementation project(":core")
     // cve 2017-20189 not applicable to this module as no serialization is performed. any serialization outside of move
     // is done with mn-data, which doesn't use native java for serialization.
-    implementation("nio:nio:1.0.4")
     implementation("info.picocli:picocli")
     implementation("io.micronaut.picocli:micronaut-picocli")
     implementation("io.micronaut.serde:micronaut-serde-jackson")
