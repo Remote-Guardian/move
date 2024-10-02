@@ -38,5 +38,39 @@ class CliCommandSpec extends Specification {
         where:
         file << localFiles
     }
+
+    void "test the getFilesFromDirectories method"() {
+        given:
+        CliCommand command = new CliCommand();
+
+        when:
+        Set<Path> hashedFiles = command.getFilesFromDirectories(Set.of(Path.of("src/test/resources/")))
+
+        then:
+        noExceptionThrown()
+
+        and:
+        hashedFiles.stream().map {it -> it.fileName}.allMatch {localFiles.contains(it.toString())}
+    }
+
+    /**
+     * Execute a command with the given arguments and return a pair of streams as stdout and stderr.
+     *
+     * This method captures the stdout and stderr, runs the command using the PicocliRunner,
+     * and then returns the output streams.
+     *
+     * @param args the arguments to pass to the command
+     * @return an array containing the output stream and error stream
+     */
+    String[] executeCommand(String... args) {
+        OutputStream out = new ByteArrayOutputStream()
+        OutputStream err = new ByteArrayOutputStream()
+        System.setOut(new PrintStream(out))
+        System.setErr(new PrintStream(out))
+        try (ApplicationContext ctx = ApplicationContext.run(Environment.CLI, Environment.TEST)) {
+            PicocliRunner.run(CliCommand, ctx, args)
+        }
+        return new String[]{out, err}
+    }
 }
 
