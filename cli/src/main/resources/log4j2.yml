@@ -1,7 +1,15 @@
 status: warn
 appenders:
   console:
+    direct: true
     type: Console
+    alwaysWriteException: false
+    layout:
+      type: PatternLayout
+      pattern: %msg%n
+  file:
+    type: File
+    file: ${user.home}/logs/remoteguardian-move.log
     layout:
       type: PatternLayout
       pattern: %d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n
