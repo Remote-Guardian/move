@@ -36,7 +36,7 @@ public final class Utils {
      *
      * <p>Example:
      * <pre>
-     * File[] files = Utils.hash(AlgorithmEnum.SHA_256, Paths.get("foo.txt"), Paths.get("bar.txt"));
+     * File[] files = Utils.hash(AlgorithmEnum.SHA256, Paths.get("foo.txt"), Paths.get("bar.txt"));
      * for (File file : files) {
      *     System.out.println(file.getHash());
      * }
