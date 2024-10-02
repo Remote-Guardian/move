@@ -3,28 +3,40 @@ package com.remoteguardian.move
 import io.micronaut.configuration.picocli.PicocliRunner
 import io.micronaut.context.ApplicationContext
 import io.micronaut.context.env.Environment
-
-import spock.lang.AutoCleanup
+import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import spock.lang.Shared
 import spock.lang.Specification
 
-import java.io.ByteArrayOutputStream
-import java.io.PrintStream
+import java.nio.file.Path
 
+@MicronautTest
 class CliCommandSpec extends Specification {
 
-    @Shared @AutoCleanup ApplicationContext ctx = ApplicationContext.run(Environment.CLI, Environment.TEST)
+    @Shared
+    def localFiles = new String[]{
+            "empty",
+            "gradlew",
+            "microfetch.exe",
+            "viktor-bystrov-batman-unsplash(small)-compressed.zip",
+            "viktor-bystrov-batman-unsplash(small).jpg",
+            "viktor-bystrov-batmanunsplash(original).jpg"}
 
-    void "test cli with command line option"() {
+    void "test the hashFile method"() {
         given:
-        ByteArrayOutputStream baos = new ByteArrayOutputStream()
-        System.setOut(new PrintStream(baos))
+        CliCommand command = new CliCommand();
+        Set<Path> fileSet = Set.of(Path.of("src/test/resources/" + file as String))
 
-        String[] args = ['-v'] as String[]
-        PicocliRunner.run(CliCommand, ctx, args)
+        when:
+        Set<com.remoteguardian.File> hashedFiles = command.hashFiles(fileSet)
 
-        expect:
-        baos.toString().contains('Hi!')
+        then:
+        noExceptionThrown()
+
+        and:
+        hashedFiles[0].filePath() == Path.of("src/test/resources/" + file as String)
+
+        where:
+        file << localFiles
     }
 }
 
