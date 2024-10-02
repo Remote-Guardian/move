@@ -57,18 +57,30 @@ public class CliCommand implements Runnable {
         Set<Path> filePaths = filePathsList.get(0);
         filePaths.addAll(getFilesFromDirectories(filePathsList.get(1)));
         Set<File> files = hashFiles(filePaths);
-        files.stream()
-                .map(File::filePath)
-                .forEach(file -> {
-                    try {
-                        console.debug("Moving {} to {}", file, outputDirectory);
-                        Files.move(file, Paths.get(outputDirectory));
-                        console.debug("Moved {} to {}", file, outputDirectory);
-                    } catch (IOException e) {
-                        console.error("Error moving file {} to {} directory", file, outputDirectory, e);
-                        System.exit(1);
-                    }
-                });
+        files.forEach(file -> {
+            try {
+                console.debug("Moving {} to {}", file.filePath(), outputDirectory);
+                Files.move(file.filePath(), Paths.get(outputDirectory));
+                console.debug("Moved {} to {}", file.filePath(), outputDirectory);
+            } catch (IOException e) {
+                console.error("Error moving file {} to {} directory", file.filePath(), outputDirectory, e);
+                System.exit(1);
+            }
+            File tempFile = new File(Path.of((outputDirectory + "/" + file.filePath().getFileName())), file.fileHash());
+            try {
+                console.debug("Hashing {} with the MD5 algorithm to compare against original hash", tempFile.filePath());
+                tempFile.validateHash(AlgorithmEnum.MD5);
+                console.debug("Hashes match. Original file {} is valid", tempFile.filePath());
+            } catch (IOException | NoSuchAlgorithmException e) {
+                console.error("Could not hash {} with the MD5 algorithm: {}", tempFile.filePath(), e.getMessage());
+                System.exit(1);
+            } catch (RemoteGuardianException e) {
+                console.error("Hashes do not match. {} is not identical to the original file", tempFile.filePath());
+            }
+
+        });
+        console.debug("Finished moving {} files to {} directory", files.size(), outputDirectory);
+
 
     }
 
