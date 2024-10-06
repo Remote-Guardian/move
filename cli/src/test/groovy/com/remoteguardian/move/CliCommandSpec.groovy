@@ -1,5 +1,8 @@
 package com.remoteguardian.move
 
+import com.google.common.jimfs.Configuration
+import com.google.common.jimfs.Jimfs
+import com.remoteguardian.AlgorithmEnum
 import com.remoteguardian.File
 import io.micronaut.configuration.picocli.PicocliRunner
 import io.micronaut.context.ApplicationContext
@@ -8,6 +11,7 @@ import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import spock.lang.Shared
 import spock.lang.Specification
 
+import java.nio.file.FileSystem
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -15,7 +19,14 @@ import java.nio.file.Path
 class CliCommandSpec extends Specification {
 
     @Shared
-    def localFiles = new String[]{
+    Configuration[] configurations = new Configuration[]{
+            Configuration.osX(),
+            Configuration.unix(),
+            Configuration.windows()
+    }
+
+    @Shared
+    String[] localFiles = new String[]{
             "empty",
             "gradlew",
             "microfetch.exe",
@@ -29,7 +40,7 @@ class CliCommandSpec extends Specification {
         Set<Path> fileSet = Set.of(Path.of("src/test/resources/" + file as String))
 
         when:
-        Set<com.remoteguardian.File> hashedFiles = command.hashFiles(fileSet)
+        Set<File> hashedFiles = command.hashFiles(fileSet)
 
         then:
         noExceptionThrown()
@@ -44,15 +55,20 @@ class CliCommandSpec extends Specification {
     void "test the getFilesFromDirectories method"() {
         given:
         CliCommand command = new CliCommand();
+        FileSystem fileSystem = Jimfs.newFileSystem(configuration as Configuration)
+        def directory = Set.of(fileSystem.getPath("src/test/resources/"))
 
         when:
-        Set<Path> hashedFiles = command.getFilesFromDirectories(Set.of(Path.of("src/test/resources/")))
+        Set<Path> hashedFiles = command.getFilesFromDirectories(directory)
 
         then:
         noExceptionThrown()
 
         and:
         hashedFiles.stream().map {it -> it.fileName}.allMatch {localFiles.contains(it.toString())}
+
+        where:
+        configuration << configurations
     }
 
     void "test the moveFiles method"() {
