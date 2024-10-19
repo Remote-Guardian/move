@@ -13,10 +13,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.LinkOption;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -44,14 +41,7 @@ public class CliCommand implements Runnable {
 
     public void run() {
         Path output = Paths.get(outputDirectory);
-        if (!Files.isDirectory(output, LinkOption.NOFOLLOW_LINKS)) {
-            if (!Files.exists(output)) {
-                console.error("Output directory does not exist: {}", outputDirectory);
-            } else if (Files.isSymbolicLink(output)) {
-                console.error("Output directory is a symbolic link: {}", outputDirectory);
-            }
-            System.exit(1);
-        }
+        validateDirectory(output);
 
         List<Set<Path>> filePathsList = validateFilePaths(input);
         Set<Path> filePaths = filePathsList.get(0);
@@ -59,32 +49,45 @@ public class CliCommand implements Runnable {
         moveFiles(hashFiles(filePaths), Path.of(outputDirectory));
     }
 
+    private void validateDirectory(Path output) {
+        if (!Files.isDirectory(output, LinkOption.NOFOLLOW_LINKS)) {
+            if (!Files.exists(output)) {
+                console.error("Output directory does not exist: {}", outputDirectory);
+            } else if (Files.isSymbolicLink(output)) {
+                console.error("Output directory is a symbolic link: {}", outputDirectory);
+            }
+        }
+        if (!Files.isWritable(output)) {
+            console.error("Output directory is not writable: {}", outputDirectory);
+        }
+    }
+
     /**
      * Moves given files to the given output directory. Also validates the hash of the file immediately after moving it.
      * @param files the set of files to move and hash
      */
     void moveFiles(Set<File> files, Path outputDirectory) {
+        validateDirectory(outputDirectory);
         files.forEach(file -> {
             try {
                 console.debug("Moving {} to {}", file.filePath(), outputDirectory);
-                Files.move(file.filePath(), outputDirectory);
+                Files.move(file.filePath(), Path.of(
+                        outputDirectory + java.io.File.separator + file.filePath().getFileName()),
+                        StandardCopyOption.REPLACE_EXISTING);
                 console.debug("Moved {} to {}", file.filePath(), outputDirectory);
             } catch (IOException e) {
-                console.error("Error moving file {} to {} directory", file.filePath(), outputDirectory, e);
-                System.exit(1);
+                console.error("Error moving file {} to {} directory.", file.filePath(), outputDirectory, e);
             }
-            File tempFile = new File(Path.of((outputDirectory + "/" + file.filePath().getFileName())), file.fileHash());
+            File tempFile = new File(Path.of((outputDirectory + java.io.File.separator + file.filePath().getFileName())), file.fileHash());
             try {
                 console.debug("Hashing {} with the MD5 algorithm to compare against original hash", tempFile.filePath());
                 tempFile.validateHash(AlgorithmEnum.MD5);
                 console.debug("Hashes match. Original file {} is valid", tempFile.filePath());
             } catch (IOException | NoSuchAlgorithmException e) {
                 console.error("Could not hash {} with the MD5 algorithm: {}", tempFile.filePath(), e.getMessage());
-                System.exit(1);
             } catch (RemoteGuardianException e) {
                 console.error("Hashes do not match. {} is not identical to the original file", tempFile.filePath());
             }
-
         });
         console.debug("Finished moving {} files to {} directory", files.size(), outputDirectory);
     }

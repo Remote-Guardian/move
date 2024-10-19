@@ -1,8 +1,5 @@
 package com.remoteguardian.move
 
-import com.google.common.jimfs.Configuration
-import com.google.common.jimfs.Jimfs
-import com.remoteguardian.AlgorithmEnum
 import com.remoteguardian.File
 import io.micronaut.configuration.picocli.PicocliRunner
 import io.micronaut.context.ApplicationContext
@@ -11,19 +8,12 @@ import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import spock.lang.Shared
 import spock.lang.Specification
 
-import java.nio.file.FileSystem
+import java.nio.file.FileAlreadyExistsException
 import java.nio.file.Files
 import java.nio.file.Path
 
 @MicronautTest
 class CliCommandSpec extends Specification {
-
-    @Shared
-    Configuration[] configurations = new Configuration[]{
-            Configuration.osX(),
-            Configuration.unix(),
-            Configuration.windows()
-    }
 
     @Shared
     String[] localFiles = new String[]{
@@ -37,7 +27,7 @@ class CliCommandSpec extends Specification {
     void "test the hashFile method"() {
         given:
         CliCommand command = new CliCommand();
-        Set<Path> fileSet = Set.of(Path.of("src/test/resources/" + file as String))
+        Set<Path> fileSet = Set.of Path.of("src/test/resources/" + (file as String))
 
         when:
         Set<File> hashedFiles = command.hashFiles(fileSet)
@@ -55,8 +45,7 @@ class CliCommandSpec extends Specification {
     void "test the getFilesFromDirectories method"() {
         given:
         CliCommand command = new CliCommand();
-        FileSystem fileSystem = Jimfs.newFileSystem(configuration as Configuration)
-        def directory = Set.of(fileSystem.getPath("src/test/resources/"))
+        def directory = Set.of(Path.of("src/test/resources/"))
 
         when:
         Set<Path> hashedFiles = command.getFilesFromDirectories(directory)
@@ -65,18 +54,18 @@ class CliCommandSpec extends Specification {
         noExceptionThrown()
 
         and:
-        hashedFiles.stream().map {it -> it.fileName}.allMatch {localFiles.contains(it.toString())}
-
-        where:
-        configuration << configurations
+        hashedFiles.stream().map { it -> it.fileName }.allMatch { localFiles.contains(it.toString()) }
     }
 
-    void "test the moveFiles method"() {
+    void "test the moveFiles method moving 1 file at a time"() {
         given:
         CliCommand command = new CliCommand();
         Set<File> fileSet = command.hashFiles(Set.of(Path.of("src/test/resources/" + file as String)));
         def outputDirectory = Path.of("src/test/resources/new-directory/")
-        Files.createDirectory(outputDirectory)
+        try {
+            Files.createDirectory(outputDirectory)
+        } catch (FileAlreadyExistsException ignored) {
+        }
 
 
         when:
@@ -85,9 +74,17 @@ class CliCommandSpec extends Specification {
         then:
         noExceptionThrown()
 
+        and: "File exists in the new directory"
+        Files.exists(Path.of("src/test/resources/new-directory/" + file as String))
+
+        and: "File does not exist in the original directory"
+        !Files.exists(Path.of("src/test/resources/" + file as String))
+
         where:
         file << localFiles
     }
+
+    // TODO(Jonathan) test the moveFiles method moving multiple files at once (and thus move all the files back to the original directory)
 
     /**
      * Execute a command with the given arguments and return a pair of streams as stdout and stderr.
