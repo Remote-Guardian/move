@@ -4,7 +4,10 @@ import com.remoteguardian.File
 import io.micronaut.configuration.picocli.PicocliRunner
 import io.micronaut.context.ApplicationContext
 import io.micronaut.context.env.Environment
+import io.micronaut.core.io.ResourceLoader
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
+import jakarta.inject.Inject
+import org.spockframework.compiler.model.SetupBlock
 import spock.lang.Shared
 import spock.lang.Specification
 
@@ -15,6 +18,15 @@ import java.nio.file.Path
 @MicronautTest
 class CliCommandSpec extends Specification {
 
+    @Inject @Shared
+    ResourceLoader resourceLoader
+
+    @Shared
+    Path originalDirectory = Path.of("src/test/resources/first-directory/")
+
+    @Shared
+    Path outputDirectory = Path.of("src/test/resources/second-directory/")
+
     @Shared
     String[] localFiles = new String[]{
             "empty",
@@ -24,13 +36,27 @@ class CliCommandSpec extends Specification {
             "viktor-bystrov-batman-unsplash(small).jpg",
             "viktor-bystrov-batmanunsplash(original).jpg"}
 
+    void setup() {
+
+    }
+
+    void cleanup() {
+
+    }
+
+    @Shared
+    def copyIfNotExists = { Path source, Path target ->
+        if (!Files.exists(target)) {
+            Files.copy(source, target)
+        }
+    }
+
     void "test the hashFile method"() {
         given:
-        CliCommand command = new CliCommand();
         Set<Path> fileSet = Set.of Path.of("src/test/resources/" + (file as String))
 
         when:
-        Set<File> hashedFiles = command.hashFiles(fileSet)
+        Set<File> hashedFiles = new CliCommand().hashFiles(fileSet)
 
         then:
         noExceptionThrown()
@@ -60,12 +86,12 @@ class CliCommandSpec extends Specification {
     void "test the moveFiles method moving 1 file at a time"() {
         given:
         CliCommand command = new CliCommand();
+        ResourceLoader resourceLoader = new ResourceLoader
         Set<File> fileSet = command.hashFiles(Set.of(Path.of("src/test/resources/" + file as String)));
         def outputDirectory = Path.of("src/test/resources/new-directory/")
         try {
             Files.createDirectory(outputDirectory)
-        } catch (FileAlreadyExistsException ignored) {
-        }
+        } catch (FileAlreadyExistsException ignored) {}
 
 
         when:
@@ -79,6 +105,11 @@ class CliCommandSpec extends Specification {
 
         and: "File does not exist in the original directory"
         !Files.exists(Path.of("src/test/resources/" + file as String))
+
+        then: 'clean up errant files'
+        try {
+            Files.delete(Path.of("src/test/resources/new-directory/"))
+        } catch (IOException ignored) {}
 
         where:
         file << localFiles
