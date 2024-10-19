@@ -70,6 +70,21 @@ class CliCommandSpec extends Specification {
         }
     }
 
+    void "test the hashFile method with all the files in localFiles"() {
+        given:
+        Set<Path> fileSet = localFiles.collect { Path.of(originalDirectory.toString() + "/" + it) } as Set
+
+        when:
+        Set<File> hashedFiles = command.hashFiles(fileSet)
+
+        then:
+        noExceptionThrown()
+
+        and:
+        hashedFiles.stream().map { it -> it.filePath() }.allMatch { localFiles.contains(it.fileName.toString()) }
+
+    }
+
     void "test the hashFile method with single files"() {
         given:
         Set<Path> fileSet = Set.of Path.of(originalDirectory.toString() + "/" +  (file as String))
@@ -102,7 +117,7 @@ class CliCommandSpec extends Specification {
         hashedFiles.stream().map { it -> it.fileName }.allMatch { localFiles.contains(it.toString()) }
     }
 
-    void "test the moveFiles method moving 1 file at a time"() {
+    void "test the moveFiles method moving one file at a time"() {
         given:
         CliCommand command = new CliCommand()
         Set<File> fileSet = command.hashFiles Set.of(Path.of(originalDirectory.toString() + "/" + file))
@@ -122,8 +137,6 @@ class CliCommandSpec extends Specification {
         where:
         file << localFiles
     }
-
-    // TODO(Jonathan) test the moveFiles method moving multiple files at once (and thus move all the files back to the original directory)
 
     /**
      * Execute a command with the given arguments and return a pair of streams as stdout and stderr.
