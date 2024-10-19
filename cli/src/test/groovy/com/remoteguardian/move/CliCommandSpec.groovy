@@ -89,7 +89,7 @@ class CliCommandSpec extends Specification {
 
     void "test the getFilesFromDirectories method"() {
         given:
-        CliCommand command = new CliCommand();
+        CliCommand command = new CliCommand()
         def directory = Set.of(Path.of("src/test/resources/"))
 
         when:
@@ -104,7 +104,7 @@ class CliCommandSpec extends Specification {
 
     void "test the moveFiles method moving 1 file at a time"() {
         given:
-        CliCommand command = new CliCommand();
+        CliCommand command = new CliCommand()
         Set<File> fileSet = command.hashFiles Set.of(Path.of(originalDirectory.toString() + "/" + file))
 
         when:
