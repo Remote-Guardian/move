@@ -4,28 +4,28 @@ import com.remoteguardian.File
 import io.micronaut.configuration.picocli.PicocliRunner
 import io.micronaut.context.ApplicationContext
 import io.micronaut.context.env.Environment
-import io.micronaut.core.io.ResourceLoader
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
-import jakarta.inject.Inject
-import org.spockframework.compiler.model.SetupBlock
 import spock.lang.Shared
 import spock.lang.Specification
 
-import java.nio.file.FileAlreadyExistsException
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.stream.Stream
 
 @MicronautTest
 class CliCommandSpec extends Specification {
 
-    @Inject @Shared
-    ResourceLoader resourceLoader
+    @Shared
+    Path sourceDirectory = Path.of("src/test/resources/")
 
     @Shared
     Path originalDirectory = Path.of("src/test/resources/first-directory/")
 
     @Shared
     Path outputDirectory = Path.of("src/test/resources/second-directory/")
+
+    @Shared
+    def command
 
     @Shared
     String[] localFiles = new String[]{
@@ -36,12 +36,24 @@ class CliCommandSpec extends Specification {
             "viktor-bystrov-batman-unsplash(small).jpg",
             "viktor-bystrov-batmanunsplash(original).jpg"}
 
-    void setup() {
-
+    def setupSpec() {
+        command = new CliCommand()
     }
 
-    void cleanup() {
+    def setup() {
+        Stream.of(originalDirectory, outputDirectory).forEach {createDirectoryIfNotExists(it)}
+        localFiles.each {copyIfNotExists(
+                Path.of(sourceDirectory.toString() + "/" + it),
+                Path.of(originalDirectory.toString() + "/" + it))
+        }
+    }
 
+    def cleanup() {
+        outputDirectory.toFile().deleteDir()
+    }
+
+    def cleanupSpec() {
+        originalDirectory.toFile().deleteDir()
     }
 
     @Shared
@@ -51,18 +63,25 @@ class CliCommandSpec extends Specification {
         }
     }
 
-    void "test the hashFile method"() {
+    @Shared
+    def createDirectoryIfNotExists = { Path target ->
+        if (!Files.exists(target)) {
+            Files.createDirectory(target)
+        }
+    }
+
+    void "test the hashFile method with single files"() {
         given:
-        Set<Path> fileSet = Set.of Path.of("src/test/resources/" + (file as String))
+        Set<Path> fileSet = Set.of Path.of(originalDirectory.toString() + "/" +  (file as String))
 
         when:
-        Set<File> hashedFiles = new CliCommand().hashFiles(fileSet)
+        Set<File> hashedFiles = command.hashFiles(fileSet)
 
         then:
         noExceptionThrown()
 
         and:
-        hashedFiles[0].filePath() == Path.of("src/test/resources/" + file as String)
+        hashedFiles[0].filePath() == Path.of(originalDirectory.toString() + "/" + file as String)
 
         where:
         file << localFiles
@@ -79,20 +98,14 @@ class CliCommandSpec extends Specification {
         then:
         noExceptionThrown()
 
-        and:
+        and: "hashedFiles contain all the expected files"
         hashedFiles.stream().map { it -> it.fileName }.allMatch { localFiles.contains(it.toString()) }
     }
 
     void "test the moveFiles method moving 1 file at a time"() {
         given:
         CliCommand command = new CliCommand();
-        ResourceLoader resourceLoader = new ResourceLoader
-        Set<File> fileSet = command.hashFiles(Set.of(Path.of("src/test/resources/" + file as String)));
-        def outputDirectory = Path.of("src/test/resources/new-directory/")
-        try {
-            Files.createDirectory(outputDirectory)
-        } catch (FileAlreadyExistsException ignored) {}
-
+        Set<File> fileSet = command.hashFiles Set.of(Path.of(originalDirectory.toString() + "/" + file))
 
         when:
         command.moveFiles(fileSet, outputDirectory)
@@ -101,15 +114,10 @@ class CliCommandSpec extends Specification {
         noExceptionThrown()
 
         and: "File exists in the new directory"
-        Files.exists(Path.of("src/test/resources/new-directory/" + file as String))
+        Files.exists(Path.of(outputDirectory.toString() + "/" + file))
 
         and: "File does not exist in the original directory"
-        !Files.exists(Path.of("src/test/resources/" + file as String))
-
-        then: 'clean up errant files'
-        try {
-            Files.delete(Path.of("src/test/resources/new-directory/"))
-        } catch (IOException ignored) {}
+        !Files.exists(Path.of(originalDirectory.toString() + "/" + file))
 
         where:
         file << localFiles
