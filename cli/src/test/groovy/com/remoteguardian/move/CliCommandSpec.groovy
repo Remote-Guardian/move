@@ -104,7 +104,6 @@ class CliCommandSpec extends Specification {
 
     void "test the getFilesFromDirectories method"() {
         given:
-        CliCommand command = new CliCommand()
         def directory = Set.of(Path.of("src/test/resources/"))
 
         when:
@@ -117,9 +116,25 @@ class CliCommandSpec extends Specification {
         hashedFiles.stream().map { it -> it.fileName }.allMatch { localFiles.contains(it.toString()) }
     }
 
+    void "test the moveFiles method using several files"() {
+        given:
+        Set<Path> fileSet = localFiles.collect { Path.of(originalDirectory.toString() + "/" + it) } as Set
+
+        when:
+        command.moveFiles(fileSet, outputDirectory)
+
+        then:
+        noExceptionThrown()
+
+        and: "Files exists in the new directory"
+        localFiles.each { file -> Files.exists(Path.of(outputDirectory.toString() + "/" + file)) }
+
+        and: "File does not exist in the original directory"
+        originalDirectory.toFile().list().length == 0
+    }
+
     void "test the moveFiles method moving one file at a time"() {
         given:
-        CliCommand command = new CliCommand()
         Set<File> fileSet = command.hashFiles Set.of(Path.of(originalDirectory.toString() + "/" + file))
 
         when:

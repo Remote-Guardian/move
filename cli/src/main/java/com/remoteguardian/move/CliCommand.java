@@ -68,11 +68,11 @@ public class CliCommand implements Runnable {
      */
     void moveFiles(Set<File> files, Path outputDirectory) {
         validateDirectory(outputDirectory);
-        files.forEach(file -> {
+        for (File file : files) {
             try {
                 console.debug("Moving {} to {}", file.filePath(), outputDirectory);
                 Files.move(file.filePath(), Path.of(
-                        outputDirectory + java.io.File.separator + file.filePath().getFileName()),
+                                outputDirectory + java.io.File.separator + file.filePath().getFileName()),
                         StandardCopyOption.REPLACE_EXISTING);
                 console.debug("Moved {} to {}", file.filePath(), outputDirectory);
             } catch (IOException e) {
@@ -88,7 +88,7 @@ public class CliCommand implements Runnable {
             } catch (RemoteGuardianException e) {
                 console.error("Hashes do not match. {} is not identical to the original file", tempFile.filePath());
             }
-        });
+        }
         console.debug("Finished moving {} files to {} directory", files.size(), outputDirectory);
     }
 
