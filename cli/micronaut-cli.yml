@@ -1,0 +1,6 @@
+applicationType: cli
+defaultPackage: com.remoteguardian.move
+testFramework: spock
+sourceLanguage: java
+buildTool: gradle
+features: [app-name, graalvm, gradle, http-client-test, java, logback, micronaut-build, picocli, picocli-java-application, picocli-spock, readme, serialization-jackson, shade, spock, yaml, yaml-build]

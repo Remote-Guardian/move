@@ -1,0 +1,58 @@
+plugins {
+    id("groovy")
+    id("io.micronaut.application") version "4.4.2"
+    id 'org.graalvm.buildtools.native' version '0.10.2'
+}
+
+version = "0.0.1"
+group = "com.remoteguardian.move"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    annotationProcessor("info.picocli:picocli-codegen")
+    annotationProcessor("io.micronaut.serde:micronaut-serde-processor")
+    implementation project(":core")
+    // cve 2017-20189 not applicable to this module as no serialization is performed. any serialization outside of move
+    // is done with mn-data, which doesn't use native java for serialization.
+    implementation("info.picocli:picocli")
+    implementation("io.micronaut.picocli:micronaut-picocli")
+    implementation("io.micronaut.serde:micronaut-serde-jackson")
+    implementation('ch.qos.logback:logback-classic:1.4.14')
+    implementation('ch.qos.logback:logback-core:1.5.13')
+    implementation 'io.reactivex.rxjava3:rxjava:3.1.9'
+    testImplementation 'net.bytebuddy:byte-buddy:1.6.5'
+    testImplementation 'org.objenesis:objenesis:2.5.1'
+    runtimeOnly("org.yaml:snakeyaml")
+}
+
+graalvmNative  {
+    binaries {
+        main {
+            imageName.set("move")
+//            buildArgs.add('-Ob')
+        }
+    }
+}
+
+application {
+    mainClass = "com.remoteguardian.move.CliCommand"
+}
+java {
+    sourceCompatibility = JavaVersion.toVersion("17")
+    targetCompatibility = JavaVersion.toVersion("17")
+}
+
+
+micronaut {
+    testRuntime("spock2")
+    processing {
+        incremental(true)
+        annotations("com.remoteguardian.move.*")
+    }
+}
+
+
+

@@ -1,0 +1,4 @@
+micronaut:
+  application:
+    name: move
+    version: "0.0.1"

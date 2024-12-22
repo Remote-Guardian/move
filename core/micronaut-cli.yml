@@ -1,0 +1,6 @@
+applicationType: cli
+defaultPackage: com.remoteguardian
+testFramework: spock
+sourceLanguage: java
+buildTool: gradle
+features: [app-name, graalvm, gradle, http-client-test, java, log4j2, lombok, micronaut-build, picocli, picocli-java-application, picocli-spock, readme, security, security-annotations, serialization-jackson, shade, spock, test-resources, yaml, yaml-build]
