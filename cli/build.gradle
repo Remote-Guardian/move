@@ -20,8 +20,9 @@ dependencies {
     implementation("info.picocli:picocli")
     implementation("io.micronaut.picocli:micronaut-picocli")
     implementation("io.micronaut.serde:micronaut-serde-jackson")
-    implementation('ch.qos.logback:logback-classic:1.4.14')
+    implementation('ch.qos.logback:logback-classic:1.5.13')
     implementation('ch.qos.logback:logback-core:1.5.13')
+    implementation('janino:janino:2.5.10')
     implementation 'io.reactivex.rxjava3:rxjava:3.1.9'
     testImplementation 'net.bytebuddy:byte-buddy:1.6.5'
     testImplementation 'org.objenesis:objenesis:2.5.1'
