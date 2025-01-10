@@ -3,6 +3,7 @@ plugins {
     id("io.micronaut.library") version "4.4.2"
     id("org.sonarqube") version "4.4.1.3373"
     id("jacoco")
+    id("org.asciidoctor.jvm.convert") version "4.0.2"
 }
 
 version = "0.0.1"
@@ -15,8 +16,6 @@ repositories {
 dependencies {
     annotationProcessor("org.projectlombok:lombok")
     compileOnly("org.projectlombok:lombok")
-//    implementation("ch.qos.logback:logback-classic:1.4.5")
-//    implementation("ch.qos.logback:logback-core:1.4.5")
     runtimeOnly("org.yaml:snakeyaml")
     testImplementation 'net.bytebuddy:byte-buddy:1.6.5'
 }
@@ -45,5 +44,20 @@ sonar {
 jacocoTestReport {
     reports {
         xml.required = true
+    }
+}
+
+asciidoctorj {
+    modules {
+        diagram.use()
+    }
+}
+
+graalvmNative {
+    binaries {
+        main {
+            imageName.set('move')
+            buildArgs.add('-Ob')
+        }
     }
 }
