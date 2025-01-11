@@ -33,7 +33,8 @@ graalvmNative  {
     binaries {
         main {
             imageName.set("move")
-//            buildArgs.add('-Ob')
+            buildArgs.add('-march=native') // binary specific to host cpu architecture
+            buildArgs.add('-O3') //add all optimizations
         }
     }
 }
