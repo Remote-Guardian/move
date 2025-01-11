@@ -1,4 +1,4 @@
-<h1><img alt="RG-Logo.svg" src="cli/src/main/doc/remoteGuardianLogo_darkmode.svg" width="200"/>
+<h1><img alt="RG-Logo.svg" src="cli/src/asciidoc/remoteGuardianLogo_darkmode.svg" width="200"/>
 <br>
 Move</h1>
 
