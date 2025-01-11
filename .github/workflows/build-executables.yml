@@ -24,4 +24,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: move-${{ matrix.os }}
-          path: move*
+          path: ${{ github.workspace }}/cli/build/native/nativeCompile/move*
+          compression: 9
+          if-no-files-found: error
