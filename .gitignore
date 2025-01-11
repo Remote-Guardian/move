@@ -15,4 +15,4 @@ out/
 .factorypath
 **/*.env
 **/settings.json
-
+**/.asciidoc
