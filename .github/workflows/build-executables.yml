@@ -1,5 +1,5 @@
 name: GraalVM Native Image builds
-on: [push, pull_request]
+on: [pull_request]
 jobs:
   build:
     name: executable for ${{ matrix.os }}
@@ -9,7 +9,6 @@ jobs:
         os: [macos-latest, windows-latest, ubuntu-latest]
     steps:
       - uses: actions/checkout@v4
-
       - uses: graalvm/setup-graalvm@v1
         with:
           java-version: '17'
@@ -18,7 +17,9 @@ jobs:
           native-image-job-reports: 'true'
 
       - name: call gradle native build command
-        run: ./gradlew :cli:nativeCompile
+        run: |
+          ./gradlew -Pagent :cli:nativeCompile
+          ./gradlew :cli:metadataCopy --task run --dir /src/main/resources/META-INF/native-image
       
       - name: Upload binary
         uses: actions/upload-artifact@v4
