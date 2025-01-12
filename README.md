@@ -46,3 +46,9 @@ All the following instructions are performed from the root of the repository.
 > [!NOTE] 
 > Notice that the flags relative to the cli submodule no longer reference paths from the root of the repository
 > (ie `/src/main/resources/META-INF/native-image` instead of `/cli/src/main/resources/META-INF/native-image` or `--task run` instead of `:cli:run`).
+> 
+### Build Executable with added metadata
+
+```bash
+./gradlew :cli:nativeCompile
+```

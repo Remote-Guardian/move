@@ -18,8 +18,9 @@ jobs:
 
       - name: call gradle native build command
         run: |
-          ./gradlew -Pagent :cli:nativeCompile
+          ./gradlew -Pagent :cli:run
           ./gradlew :cli:metadataCopy --task run --dir /src/main/resources/META-INF/native-image
+          ./gradlew :cli:nativeCompile
       
       - name: Upload binary
         uses: actions/upload-artifact@v4
