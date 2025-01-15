@@ -1,9 +1,4 @@
 <configuration>
-	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-		<layout class="ch.qos.logback.classic.PatternLayout">
-			<Pattern>%msg%n</Pattern>
-		</layout>
-	</appender>
 	<appender name="FILE" class="ch.qos.logback.core.FileAppender">
 		<file>log/output.log</file>
 		<encoder>
@@ -12,8 +7,5 @@
 	</appender>
 	<root level="INFO">
 		<appender-ref ref="FILE"/>
-	</root>
-	<root level="Warn">
-		<appender-ref ref="STDOUT"/>
 	</root>
 </configuration>

@@ -16,3 +16,4 @@ out/
 **/*.env
 **/settings.json
 **/.asciidoc
+**/*.log
