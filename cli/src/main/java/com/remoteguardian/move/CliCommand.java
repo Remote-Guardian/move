@@ -8,9 +8,13 @@ import io.micronaut.configuration.picocli.PicocliRunner;
 import io.micronaut.context.annotation.Value;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.disposables.Disposable;
+import org.fusesource.jansi.AnsiConsole;
+
+import static java.lang.System.out; // ignore sonarqube whining (we actually are printing to console despite what sonarqube thinks)
+import static org.fusesource.jansi.Ansi.*;
+import static org.fusesource.jansi.Ansi.Color.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.IVersionProvider;
@@ -31,7 +35,7 @@ import java.util.stream.Stream;
 )
 public class CliCommand implements Runnable {
 
-    private static final Logger console = LoggerFactory.getLogger(CliCommand.class);
+    private static final Logger logger = LoggerFactory.getLogger(CliCommand.class);
 
     @Option(description = "File path(s) or directory path",
             names = {"-i", "--input", "-F"},
@@ -49,6 +53,7 @@ public class CliCommand implements Runnable {
     }
 
     public void run() {
+        AnsiConsole.systemInstall();
         Path output = Paths.get(outputDirectory);
         validateDirectory(output);
 
@@ -61,13 +66,13 @@ public class CliCommand implements Runnable {
     private void validateDirectory(Path output) {
         if (!Files.isDirectory(output, LinkOption.NOFOLLOW_LINKS)) {
             if (!Files.exists(output)) {
-                console.error("Output directory does not exist: {}", outputDirectory);
+                err("Output directory does not exist: %s", outputDirectory);
             } else if (Files.isSymbolicLink(output)) {
-                console.error("Output directory is a symbolic link: {}", outputDirectory);
+                err("Output directory is a symbolic link: %s", outputDirectory);
             }
         }
         if (!Files.isWritable(output)) {
-            console.error("Output directory is not writable: {}", outputDirectory);
+            err("Output directory is not writable: %s", outputDirectory);
         }
     }
 
@@ -79,26 +84,25 @@ public class CliCommand implements Runnable {
         validateDirectory(outputDirectory);
         for (File file : files) {
             try {
-                console.debug("Moving {} to {}", file.filePath(), outputDirectory);
-                Files.move(file.filePath(), Path.of(
-                                outputDirectory + java.io.File.separator + file.filePath().getFileName()),
+                debug("Moving %s to %s", file.filePath(), outputDirectory);
+                Files.move(file.filePath(), Path.of(outputDirectory + java.io.File.separator + file.filePath().getFileName()),
                         StandardCopyOption.REPLACE_EXISTING);
-                console.debug("Moved {} to {}", file.filePath(), outputDirectory);
+                debug("Moved %s to %s", file.filePath(), outputDirectory);
             } catch (IOException e) {
-                console.error("Error moving file {} to {} directory.", file.filePath(), outputDirectory, e);
+                err("Error moving file %s to %s directory. %s", file.filePath(), outputDirectory, e);
             }
             File tempFile = new File(Path.of((outputDirectory + java.io.File.separator + file.filePath().getFileName())), file.fileHash());
             try {
-                console.debug("Hashing {} with the MD5 algorithm to compare against original hash", tempFile.filePath());
+                debug("Hashing %s with the MD5 algorithm to compare against original hash", tempFile.filePath());
                 tempFile.validateHash(AlgorithmEnum.MD5);
-                console.debug("Hashes match. Original file {} is valid", tempFile.filePath());
+                debug("Hashes match. %s is identical to the original file", tempFile.filePath());
             } catch (IOException | NoSuchAlgorithmException e) {
-                console.error("Could not hash {} with the MD5 algorithm: {}", tempFile.filePath(), e.getMessage());
+                err("Could not hash %s with the MD5 algorithm: %s", tempFile.filePath(), e.getMessage());
             } catch (RemoteGuardianException e) {
-                console.error("Hashes do not match. {} is not identical to the original file", tempFile.filePath());
+                err("Hashes do not match. %s is not identical to the original file", tempFile.filePath());
             }
         }
-        console.debug("Finished moving {} files to {} directory", files.size(), outputDirectory);
+        debug("Finished moving %s files to %s directory", files.size(), outputDirectory);
     }
 
     /**
@@ -114,7 +118,7 @@ public class CliCommand implements Runnable {
         try {
             return Utils.hash(AlgorithmEnum.MD5, files.toArray(Path[]::new));
         } catch (NoSuchAlgorithmException e) {
-            console.error("Could not hash the input files with the MD5 algorithm: {}", e.getMessage());
+            err("Could not hash the input files with the MD5 algorithm: %s", e.getMessage());
         }
         return hashedFiles;
     }
@@ -132,10 +136,53 @@ public class CliCommand implements Runnable {
                 stream.filter(Files::isRegularFile)
                         .forEach(filePaths::add);
             } catch (IOException e) {
-                console.error("Error traversing reading directory contents: {}", e.getMessage());
+                err("Error traversing reading directory contents: %s", e.getMessage());
             }
         });
         return filePaths;
+    }
+
+
+    /**
+     * Logs a message at the debug level and prints it to the console.
+     *
+     * @param message the message to be logged and printed
+     */
+    private void debug(String message) {
+        out.println(ansi().fg(BLUE).a(message).reset());
+        logger.debug(message);
+    }
+
+    /**
+     * Logs a message at the error level and prints it to the console.
+     *
+     * @param message the message to be logged and printed
+     */
+    private void err(String message) {
+        out.println(ansi().fg(RED).a(message).reset());
+        logger.error(message);
+    }
+
+    /**
+     * Logs a message at the debug level and prints it to the console.
+     *
+     * @param format the format of the message. This parameter is passed to the {@link String#format(String, Object...)}
+     *               method to generate the message string.
+     * @param args   the arguments to be formatted
+     */
+    private void debug(String format, Object... args) {
+        debug(String.format(format, args));
+    }
+
+    /**
+     * Logs a message at the error level and prints it to the console.
+     *
+     * @param format the format of the message. This parameter is passed to the {@link String#format(String, Object...)}
+     *               method to generate the message string.
+     * @param args   the arguments to be formatted
+     */
+    private void err(String format, Object... args) {
+        err(String.format(format, args));
     }
 
     /**
@@ -156,7 +203,7 @@ public class CliCommand implements Runnable {
         // fail fast
         if (invalidPaths.count().blockingGet() > 0) {
             String invalidPathsStr = Arrays.toString(invalidPaths.blockingStream().toArray(String[]::new));
-            console.error("Input parameter must be a valid file path. Input value: {} Please check the input " +
+            logger.error("Input parameter must be a valid file path. Input value: {} Please check the input " +
                     "path and make sure it exists. If it is a directory, " +
                     "it should be accessible and not empty.", invalidPathsStr);
         }
@@ -165,7 +212,7 @@ public class CliCommand implements Runnable {
         Arrays.stream(inputs).forEach(thisInput -> {
             Path path = Paths.get(thisInput);
             if (Files.isSymbolicLink(path)) {
-                console.warn("Ignoring symbolic link: {}", thisInput);
+                logger.warn("Ignoring symbolic link: {}", thisInput);
             }
         });
 
@@ -188,7 +235,7 @@ public class CliCommand implements Runnable {
     /**
      * {@link IVersionProvider} implementation that returns version from the application.yml file.
      */
-    static class PropertiesVersionProvider implements CommandLine.IVersionProvider {
+    static class PropertiesVersionProvider implements IVersionProvider {
         @Value("${micronaut.application.version}")
         String applicationVersion;
 

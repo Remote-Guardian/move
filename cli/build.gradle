@@ -18,10 +18,10 @@ dependencies {
     // cve 2017-20189 not applicable to this module as no serialization is performed. any serialization outside of move
     // is done with mn-data, which doesn't use native java for serialization.
     implementation("info.picocli:picocli")
+    implementation 'org.fusesource.jansi:jansi:2.4.1'
     implementation("io.micronaut.picocli:micronaut-picocli")
     implementation("io.micronaut.serde:micronaut-serde-jackson")
     implementation('ch.qos.logback:logback-classic:1.5.13')
-    implementation('ch.qos.logback:logback-core:1.5.13')
     implementation('janino:janino:2.5.10')
     implementation 'io.reactivex.rxjava3:rxjava:3.1.9'
     testImplementation 'net.bytebuddy:byte-buddy:1.6.5'
