@@ -9,7 +9,7 @@ Move files with confidence!
 
 ### Installation
 
-Download the binary for your platform from [move's latest release](https://github.com/RemoteGuardian/move/releases).
+Download the binary for your platform from [move's latest release](https://github.com/Remote-Guardian/move/releases).
 
 ### Usage
 
