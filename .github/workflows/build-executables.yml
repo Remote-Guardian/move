@@ -1,5 +1,5 @@
-name: GraalVM Native Image builds
-on: [push, pull_request]
+name: GraalVM Native Image Test run and build tests
+on: [pull_request]
 jobs:
   build:
     name: executable for ${{ matrix.os }}
@@ -18,7 +18,7 @@ jobs:
           native-image-job-reports: 'true'
 
       - name: call gradle native build command
-        run: ./gradlew :cli:nativeCompile
+        run: ./gradlew test :cli:nativeCompile
       
       - name: Upload binary
         uses: actions/upload-artifact@v4
