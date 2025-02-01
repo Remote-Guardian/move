@@ -8,11 +8,13 @@ import io.micronaut.configuration.picocli.PicocliRunner;
 import io.micronaut.context.annotation.Value;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.disposables.Disposable;
+import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.AnsiConsole;
 
 import static java.lang.System.out; // ignore sonarqube whining (we actually are printing to console despite what sonarqube thinks)
 import static org.fusesource.jansi.Ansi.*;
-import static org.fusesource.jansi.Ansi.Color.*;
+import static org.fusesource.jansi.Ansi.Color.RED;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine.Command;
@@ -47,6 +49,10 @@ public class CliCommand implements Runnable {
             names = {"-o", "--output", "--destination"},
             required = true)
     private String outputDirectory;
+
+    @Option(description = "Enable debug output",
+            names = {"-v", "--verbose"})
+    private boolean verbose = false;
 
     public static void main(String[] args) {
         PicocliRunner.run(CliCommand.class, args);
@@ -102,7 +108,7 @@ public class CliCommand implements Runnable {
                 err("Hashes do not match. %s is not identical to the original file", tempFile.filePath());
             }
         }
-        debug("Finished moving %s files to %s directory", files.size(), outputDirectory);
+        info("Finished moving %s files to %s directory", files.size(), outputDirectory);
     }
 
     /**
@@ -142,40 +148,79 @@ public class CliCommand implements Runnable {
         return filePaths;
     }
 
+    /**
+     * Prints info message in stylized text. Logs the same information prefaced with "[INFO]"
+     * @param  message to be logged and printed
+     */
+    private void info(String message) {
+        if (null == message) {
+            throw new IllegalArgumentException("Info message cannot be null");
+        }
+        Ansi renderedMessage = ansi().fgRgb(104, 50, 154).a(message);
+        out.println(renderedMessage);
+        logger.info("[INFO] {}", renderedMessage);
+        renderedMessage.reset();
+    }
 
     /**
-     * Logs a message at the debug level and prints it to the console.
+     * Prints debug message in stylized text. Logs the same information prefaced with "[DEBUG]"
      *
      * @param message the message to be logged and printed
      */
     private void debug(String message) {
-        out.println(ansi().fg(BLUE).a(message).reset());
-        logger.debug(message);
+        if (null == message) {
+            throw new IllegalArgumentException("Debug message cannot be null");
+        }
+        Ansi renderedMessage = ansi().fgRgb(68, 187, 128).a(Attribute.INTENSITY_FAINT).a(message);
+        if (null != renderedMessage && null != renderedMessage.toString()) {
+            out.println(renderedMessage);
+            logger.debug("[DEBUG] {}", renderedMessage);
+            renderedMessage.reset();
+        }
     }
 
     /**
-     * Logs a message at the error level and prints it to the console.
+     * Prints error message in stylized text. Logs the same information prefaced with "[ERROR]"
      *
      * @param message the message to be logged and printed
      */
     private void err(String message) {
-        out.println(ansi().fg(RED).a(message).reset());
-        logger.error(message);
+        if (null == message) {
+            throw new IllegalArgumentException("Debug message cannot be null");
+        }
+        Ansi renderedMessage = ansi().fg(RED).a(message);
+        out.println(renderedMessage);
+        logger.error("[ERROR] {}", renderedMessage);
     }
 
     /**
-     * Logs a message at the debug level and prints it to the console.
+     * Prints info message in stylized text. Logs the same information prefaced with "[INFO]"
+     *
+     * @param format the format of the message. This parameter is passed to the {@link String#format(String, Object...)}
+     *               method to generate the message string.
+     * @param args   the arguments to be formatted
+     */
+    private void info(String format, Object... args) {
+        info(String.format(format, args));
+    }
+
+
+    /**
+     * Prints debug message in stylized text. Logs the same information prefaced with "[DEBUG]"
      *
      * @param format the format of the message. This parameter is passed to the {@link String#format(String, Object...)}
      *               method to generate the message string.
      * @param args   the arguments to be formatted
      */
     private void debug(String format, Object... args) {
+        if (!verbose) {
+            return;
+        }
         debug(String.format(format, args));
     }
 
     /**
-     * Logs a message at the error level and prints it to the console.
+     * Prints error message in stylized text. Logs the same information prefaced with "[ERROR]"
      *
      * @param format the format of the message. This parameter is passed to the {@link String#format(String, Object...)}
      *               method to generate the message string.

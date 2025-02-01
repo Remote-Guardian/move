@@ -53,13 +53,14 @@ class CliCommandSpec extends MoveSpec {
 
         then:
         String[] expectedOutput = new String[]{
-                "Usage: move [-hV] -o=<outputDirectory> [-i=<input>[,<input>...]]...",
+                "Usage: move [-hvV] -o=<outputDirectory> [-i=<input>[,<input>...]]...",
                 "recursively moves files and directories",
                 "  -h, --help      Show this help message and exit.",
                 "  -i, -F, --input=<input>[,<input>...]",
                 "                  File path(s) or directory path",
                 "  -o, --output, --destination=<outputDirectory>",
                 "                  output directory",
+                "  -v, --verbose   Enable debug output",
                 "  -V, --version   Print version information and exit."
         }
         stdout.toString().split(System.lineSeparator()) == expectedOutput
@@ -82,10 +83,9 @@ class CliCommandSpec extends MoveSpec {
     void "test moving one file at a time"() {
         when:
         String[] args = ["-i", originalDirectory.toString() + separator + input, "-o", outputDirectory]
-        def (stdout, stderr) = executeCommand(args)
+        def (ignored, stderr) = executeCommand(args)
 
         then:
-        stdout.size() == 0
         stderr.size() == 0
 
         and: "File exists in the new directory"
@@ -105,7 +105,6 @@ class CliCommandSpec extends MoveSpec {
         def (stdout, stderr) = executeCommand(args)
 
         then:
-        stdout.size() == 0
         stderr.size() == 0
 
         and: "Files exists in the new directory"
