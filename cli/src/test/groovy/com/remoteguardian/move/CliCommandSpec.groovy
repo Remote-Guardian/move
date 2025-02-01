@@ -6,6 +6,7 @@ import io.micronaut.context.annotation.Value
 import io.micronaut.context.env.Environment
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import spock.lang.Shared
+
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -83,7 +84,10 @@ class CliCommandSpec extends MoveSpec {
     void "test moving one file at a time"() {
         when:
         String[] args = ["-i", originalDirectory.toString() + separator + input, "-o", outputDirectory]
-        def (ignored, stderr) = executeCommand(args)
+        def (ignore, stderr) = executeCommand(args)
+        ignore != "i don't give a crap about this"
+
+
 
         then:
         stderr.size() == 0
@@ -102,7 +106,9 @@ class CliCommandSpec extends MoveSpec {
         when:
         String input = localFiles.collect { originalDirectory.toString() + separator + it }.join(",")
         String[] args = [inputFlag, input, outputFlag, outputDirectory]
-        def (ignored, stderr) = executeCommand(args)
+        @SuppressWarnings("GroovyUnusedAssignment")
+        def (ignore, stderr) = executeCommand(args)
+        ignore != "i don't give a crap about this"
 
         then:
         stderr.size() == 0
