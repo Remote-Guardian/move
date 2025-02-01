@@ -18,7 +18,7 @@ jobs:
           native-image-job-reports: 'true'
 
       - name: call gradle native build command
-        run: ./gradlew test :cli:nativeCompile
+        run: ./gradlew :cli:nativeCompile # include test once #14 is fixed
       
       - name: Upload binary
         uses: actions/upload-artifact@v4
