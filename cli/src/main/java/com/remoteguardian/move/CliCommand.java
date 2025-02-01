@@ -108,7 +108,7 @@ public class CliCommand implements Runnable {
                 err("Hashes do not match. %s is not identical to the original file", tempFile.filePath());
             }
         }
-        info("Finished moving %s files to %s directory", files.size(), outputDirectory);
+        info("Finished moving %s file(s) to %s", files.size(), outputDirectory);
     }
 
     /**
@@ -294,7 +294,14 @@ public class CliCommand implements Runnable {
             if (null == applicationName) {
                 applicationName = System.getProperty("micronaut.application.name");
             }
-            return new String[]{applicationName, applicationVersion};
+            String header = String.valueOf(ansi().fgRgb(104, 50, 154).a("""
+                     __ __
+                    |  \\  \\ ___  _ _  ___
+                    | | | |/ . \\| | |/ ._>
+                    |_|_|_|\\___/|__/ \\___.
+                    
+                    """).reset());
+            return new String[]{header, applicationName + " version " + applicationVersion};
         }
     }
 

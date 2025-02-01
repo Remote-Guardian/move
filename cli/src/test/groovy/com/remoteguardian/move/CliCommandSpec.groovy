@@ -73,7 +73,7 @@ class CliCommandSpec extends MoveSpec {
         def (stdout, stderr) = executeCommand(args)
 
         then:
-        stdout.toString().trim().replace(System.lineSeparator() as String, "") == "$name$version"
+        stdout.toString().contains("$name version $version")
         stderr.size() == 0
 
         where:
@@ -102,7 +102,7 @@ class CliCommandSpec extends MoveSpec {
         when:
         String input = localFiles.collect { originalDirectory.toString() + separator + it }.join(",")
         String[] args = [inputFlag, input, outputFlag, outputDirectory]
-        def (stdout, stderr) = executeCommand(args)
+        def (ignored, stderr) = executeCommand(args)
 
         then:
         stderr.size() == 0
