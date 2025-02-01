@@ -87,8 +87,6 @@ class CliCommandSpec extends MoveSpec {
         def (ignore, stderr) = executeCommand(args)
         ignore != "i don't give a crap about this"
 
-
-
         then:
         stderr.size() == 0
 
@@ -106,7 +104,6 @@ class CliCommandSpec extends MoveSpec {
         when:
         String input = localFiles.collect { originalDirectory.toString() + separator + it }.join(",")
         String[] args = [inputFlag, input, outputFlag, outputDirectory]
-        @SuppressWarnings("GroovyUnusedAssignment")
         def (ignore, stderr) = executeCommand(args)
         ignore != "i don't give a crap about this"
 
